@@ -29,17 +29,29 @@ class tools_packages {
 		ensure => "latest"
 	}
 }
+class update-npm {
+	exec { 'update-npm':
+		command => 'npm install -g npm@latest',
+	}
+}
 class bower_install {
 	exec { 'install-bower':
-		command => 'npm install -g bower',
+		command => 'npm install -g bower --no-bin-links',
 	}
 }
 
 class grunt_install {
         exec { 'install-grunt':
-                command => 'npm install -g grunt-cli',
+                command => 'npm install -g grunt-cli --no-bin-links',
         }
 }
+
+class googleapi_install {
+        exec { 'install-googleapi':
+                command => 'npm install googleapis --save --no-bin-links & npm install google-auth-library --save --no-bin-links',
+        }
+}
+
 
 include system-update
 include system-upgrade
@@ -47,3 +59,4 @@ include js_packages
 include tools_packages
 include bower_install
 include grunt_install
+include googleapi_install

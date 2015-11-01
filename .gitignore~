@@ -2,4 +2,4 @@
 puppet/manifests/*.swp
 client_secret.json
 npm-debug*
-node_modules/
+node-modules*
