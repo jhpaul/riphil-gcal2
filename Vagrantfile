@@ -1,6 +1,8 @@
 Vagrant.configure("2") do |config|
 
   config.vm.box = "ubuntu/trusty64"
+    config.vm.hostname = "gcal-vagrant"
+
 #  config.vm.box_url = "http://vagrantcloud.com/ubuntu/boxes/trusty64"
   config.vm.synced_folder "./", "/vagrant", id: "vagrant-root"
 
