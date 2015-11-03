@@ -99,8 +99,9 @@ function storeToken(token) {
  *
  * @param {google.auth.OAuth2} auth An authorized OAuth2 client.
  */
+ var calendar = google.calendar('v3');
+
 function listCalendars(auth, done) {
-  var calendar = google.calendar('v3');
   // Pull list of all Calendars in the Account
   authlocal = {auth:auth}
   calendar.calendarList.list(authlocal,
@@ -111,13 +112,13 @@ function listCalendars(auth, done) {
         }
         calendars = response.items;
         // console.log(calendars)
-        done(null, calendars)
+        done(null, auth, calendars)
         // return calendars
     });
   // done(null, cals);
 }
 
-function listEvents(auth,calendarId) {
+function listEvents(auth, calendarId) {
   // Pull list of all events in a calendar
   calendar.events.list({
     auth: auth,
@@ -127,16 +128,21 @@ function listEvents(auth,calendarId) {
       console.log('The API returned an error: ' + err);
       return;
     }
-    events = response.items[0];
+    events = response.items;
     console.log(events)
   });
 }
-function printCals(err, cals) {
+function printCals(err, auth, cals) {
     if (err) {
         return;
     }
-    console.log(cals, "PRINT");
+    // console.log(cals);
+    cals.forEach( function (item) {
+        console.log(item['id'])
+        listEvents(auth, item['id'])
+    })
 }
+
 
 function execute(auth) {
   listCalendars(auth, printCals)
