@@ -46,11 +46,11 @@ class grunt_install {
         }
 }
 
-class googleapi_install {
-        exec { 'install-googleapi':
-                command => 'npm install googleapis --save --no-bin-links & npm install google-auth-library --save --no-bin-links',
-        }
-}
+# class googleapi_install {
+#         exec { 'install-googleapi':
+#                 command => 'npm install googleapis --save --no-bin-links & npm install google-auth-library --save --no-bin-links',
+#         }
+# }
 
 
 include system-update

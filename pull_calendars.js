@@ -16,7 +16,8 @@ fs.readFile('client_secret.json', function processClientSecrets(err, content) {
   }
   // Authorize a client with the loaded credentials, then call the
   // Google Calendar API.
-  authorize(JSON.parse(content), listEvents);
+  // authorize(JSON.parse(content), listEvents);
+  authorize(JSON.parse(content), execute);
 });
 
 /**
@@ -98,17 +99,46 @@ function storeToken(token) {
  *
  * @param {google.auth.OAuth2} auth An authorized OAuth2 client.
  */
-function listEvents(auth) {
+function listCalendars(auth, done) {
   var calendar = google.calendar('v3');
   // Pull list of all Calendars in the Account
-  calendar.calendarList.list({
+  authlocal = {auth:auth}
+  calendar.calendarList.list(authlocal,
+      function(err, response) {
+        if (err) {
+          console.log('The API returned an error: ' + err);
+         return
+        }
+        calendars = response.items;
+        // console.log(calendars)
+        done(null, calendars)
+        // return calendars
+    });
+  // done(null, cals);
+}
+
+function listEvents(auth,calendarId) {
+  // Pull list of all events in a calendar
+  calendar.events.list({
     auth: auth,
+    calendarId: calendarId
   }, function(err, response) {
     if (err) {
       console.log('The API returned an error: ' + err);
       return;
     }
-    calendars = response.items;
-    console.log(calendars)
+    events = response.items[0];
+    console.log(events)
   });
 }
+function printCals(err, cals) {
+    if (err) {
+        return;
+    }
+    console.log(cals, "PRINT");
+}
+
+function execute(auth) {
+  listCalendars(auth, printCals)
+  }
+  // listEvents(auth)
