@@ -127,44 +127,50 @@ function listCalendars(auth, done) {
          return
         }
         calendars = response.items;
-        // console.log(calendars)
+        console.log(calendars)
         done(null, auth, calendars)
         // return calendars
     });
   // done(null, cals);
 }
 
-function listEvents(auth, calendarId) {
+function listEvents(auth, calendarId, calendarName) {
   // Pull list of all events in a calendar
   calendar.events.list({
     auth: auth,
     calendarId: calendarId,
     timeMin: "2015-11-03T00:00:00Z",
-    timeMax: "2015-11-04T00:00:00Z"
+    timeMax: "2015-11-03T23:59:59Z"
   }, function(err, response) {
     if (err) {
-      console.log('The API returned an error: ' + err);
+      console.log("\n[",calendarName, '] The API returned an error: ' + err, "\n");
       return;
-    }
-    events = response.items;
-    // console.log(events)
+  }
+  events = response.items;
+  if (events) {
+      if (events.length == 0) {
+      console.log("No Events: ", calendarName, calendarId)
+      return;
+  }}
+
+    console.log(events)
   });
 }
-function printCals(err, auth, cals) {
+function getEvents(err, auth, cals) {
     if (err) {
         return;
     }
     // console.log(cals);
     cals.forEach( function (item) {
-        // console.log(item['id'])
-        listEvents(auth, item['id'])
+        console.log(item['id'])
+        listEvents(auth, item['id'], item['summary'])
         // console.log(auth);
     })
 }
 
 
 function execute(auth) {
-  listCalendars(auth, printCals)
+  listCalendars(auth, getEvents)
   // }
   // listEvents(auth)
 
