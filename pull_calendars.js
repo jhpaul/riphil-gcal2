@@ -2,11 +2,27 @@ var fs = require('fs');
 var readline = require('readline');
 var google = require('googleapis');
 var googleAuth = require('google-auth-library');
+// var Batchelor = require('batchelor');
 
 var SCOPES = ['https://www.googleapis.com/auth/calendar.readonly'];
 var TOKEN_DIR = (process.env.HOME || process.env.HOMEPATH ||
     process.env.USERPROFILE) + '/.credentials/';
 var TOKEN_PATH = TOKEN_DIR + 'calendar-nodejs-quickstart.json';
+
+// Time Handling
+/* use a function for the exact format desired... */
+function ISODateString(d){
+ function pad(n){return n<10 ? '0'+n : n}
+ return d.getUTCFullYear()+'-'
+      + pad(d.getUTCMonth()+1)+'-'
+      + pad(d.getUTCDate())+'T'
+      + pad(d.getUTCHours())+':'
+      + pad(d.getUTCMinutes())+':'
+      + pad(d.getUTCSeconds())+'Z'}
+
+var d = new Date();
+console.log(ISODateString(d)); // prints something like 2009-09-28T19:03:12Z
+
 
 // Load client secrets from a local file.
 fs.readFile('client_secret.json', function processClientSecrets(err, content) {
@@ -122,14 +138,16 @@ function listEvents(auth, calendarId) {
   // Pull list of all events in a calendar
   calendar.events.list({
     auth: auth,
-    calendarId: calendarId
+    calendarId: calendarId,
+    timeMin: "2015-11-03T00:00:00Z",
+    timeMax: "2015-11-04T00:00:00Z"
   }, function(err, response) {
     if (err) {
       console.log('The API returned an error: ' + err);
       return;
     }
     events = response.items;
-    console.log(events)
+    // console.log(events)
   });
 }
 function printCals(err, auth, cals) {
@@ -138,13 +156,36 @@ function printCals(err, auth, cals) {
     }
     // console.log(cals);
     cals.forEach( function (item) {
-        console.log(item['id'])
+        // console.log(item['id'])
         listEvents(auth, item['id'])
+        // console.log(auth);
     })
 }
 
 
 function execute(auth) {
   listCalendars(auth, printCals)
-  }
+  // }
   // listEvents(auth)
+
+// Batch Requesting Works, but looks like I need a different API Key, that's a pain so let's wait for now
+  // var batch = new Batchelor({
+  //     'uri':'https://www.googleapis.com/batch',
+  //     'method':'POST',
+  //     'auth':
+  //     {
+  //         'bearer': auth['credentials']['access_token']
+  //     },
+  //     'headers': {
+  //         'Content-Type': 'multipart/mixed'
+  //     }
+  // });
+  // batch.add({
+  //     'method':'GET',
+  //     'path':'/calendar/v3/users/me/calendarList'
+  // })
+  // batch.run(function(err, response){
+  //     console.log('response:', response);
+  //   //   res.json(response);
+  // });
+}
