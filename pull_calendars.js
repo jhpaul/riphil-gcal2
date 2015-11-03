@@ -1,3 +1,6 @@
+// Next Step: get "listEvents" to return an array of events inside of an array
+
+
 var fs = require('fs');
 var readline = require('readline');
 var google = require('googleapis');
