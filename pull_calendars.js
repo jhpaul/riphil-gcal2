@@ -6,6 +6,8 @@ var readline = require('readline');
 var google = require('googleapis');
 var googleAuth = require('google-auth-library');
 // var Batchelor = require('batchelor');
+var moment = require('moment-timezone');
+var timeZone = "America/New_York"
 
 var SCOPES = ['https://www.googleapis.com/auth/calendar.readonly'];
 var TOKEN_DIR = (process.env.HOME || process.env.HOMEPATH ||
@@ -23,8 +25,8 @@ function ISODateString(d){
       + pad(d.getUTCMinutes())+':'
       + pad(d.getUTCSeconds())+'Z'}
 
-var d = new Date();
-console.log(ISODateString(d)); // prints something like 2009-09-28T19:03:12Z
+// var d = new Date();
+// console.log(d, ISODateString(d)); // prints something like 2009-09-28T19:03:12Z
 
 
 // Load client secrets from a local file.
@@ -118,7 +120,15 @@ function storeToken(token) {
  *
  * @param {google.auth.OAuth2} auth An authorized OAuth2 client.
  */
- var calendar = google.calendar('v3');
+var calendar = google.calendar('v3');
+
+
+var printDate = "2015-11-02"
+var timeMin = moment.tz(printDate + " 00:00", timeZone).format() //"2015-11-03T00:00:00Z"
+var timeMax = moment.tz(printDate + " 23:59:59", timeZone).format() //"2015-11-03T23:59:59Z"
+console.log (timeZone)
+console.log ("StartTime:", timeMin)
+console.log ("EndTime:", timeMax)
 
 function listCalendars(auth, done) {
   // Pull list of all Calendars in the Account
@@ -130,20 +140,22 @@ function listCalendars(auth, done) {
          return
         }
         calendars = response.items;
-        console.log(calendars)
+        // console.log(calendars)
         done(null, auth, calendars)
         // return calendars
     });
   // done(null, cals);
 }
 
-function listEvents(auth, calendarId, calendarName) {
+function listEvents(auth, calendarId, calendarName, timeMin, timeMax) {
   // Pull list of all events in a calendar
   calendar.events.list({
     auth: auth,
     calendarId: calendarId,
-    timeMin: "2015-11-03T00:00:00Z",
-    timeMax: "2015-11-03T23:59:59Z"
+    timeMin: timeMin,
+    timeMax: timeMax,
+    singleEvents: 'True',
+    orderBy: 'startTime'
   }, function(err, response) {
     if (err) {
       console.log("\n[",calendarName, '] The API returned an error: ' + err, "\n");
@@ -154,9 +166,14 @@ function listEvents(auth, calendarId, calendarName) {
       if (events.length == 0) {
       console.log("No Events: ", calendarName, calendarId)
       return;
-  }}
+    } else {
+          events.forEach(function(item) {
+              console.log(item['summary'])
+          })
+      }
+  }
 
-    console.log(events)
+    // console.log(events)
   });
 }
 function getEvents(err, auth, cals) {
@@ -165,8 +182,8 @@ function getEvents(err, auth, cals) {
     }
     // console.log(cals);
     cals.forEach( function (item) {
-        console.log(item['id'])
-        listEvents(auth, item['id'], item['summary'])
+        // console.log(item['id'])
+        listEvents(auth, item['id'], item['summary'], timeMin, timeMax)
         // console.log(auth);
     })
 }
