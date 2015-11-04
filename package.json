@@ -67,6 +67,8 @@
     "mime-types": "^2.1.7",
     "minimalistic-assert": "^1.0.0",
     "minimist": "^1.2.0",
+    "moment": "^2.10.6",
+    "moment-timezone": "^0.4.1",
     "node-forge": "^0.6.37",
     "node-uuid": "^1.4.3",
     "number-is-nan": "^1.0.0",
