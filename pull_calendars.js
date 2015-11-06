@@ -277,35 +277,35 @@ function getEvents(auth, timeMin, timeMax, calendars) {
 
 
 
-
-function listEvents(auth, calendarId, calendarName, timeMin, timeMax, done) {
-    // Pull list of all events in a calendar
-    calendar.events.list({
-        auth: auth,
-        calendarId: calendarId,
-        timeMin: timeMin,
-        timeMax: timeMax,
-        singleEvents: 'True',
-        orderBy: 'startTime'
-    }, function(err, response) {
-        if (err) {
-            console.log("\n[", calendarName, '] The API returned an error: ' + err, "\n");
-            return;
-        }
-        events = response.items;
-        if (events) {
-            if (events.length == 0) {
-                console.log("No Events: ", calendarName, calendarId)
-                return;
-            }
-            // else {
-            //       events.forEach(function(item) {
-            //         //   console.log(item['summary'])
-            //       })
-            //   }
-            done(null, auth, calendarId, calendarName, timeMin, timeMax, events)
-        }
-
-        // console.log(events)
-    });
-}
+// 
+// function listEvents(auth, calendarId, calendarName, timeMin, timeMax, done) {
+//     // Pull list of all events in a calendar
+//     calendar.events.list({
+//         auth: auth,
+//         calendarId: calendarId,
+//         timeMin: timeMin,
+//         timeMax: timeMax,
+//         singleEvents: 'True',
+//         orderBy: 'startTime'
+//     }, function(err, response) {
+//         if (err) {
+//             console.log("\n[", calendarName, '] The API returned an error: ' + err, "\n");
+//             return;
+//         }
+//         events = response.items;
+//         if (events) {
+//             if (events.length == 0) {
+//                 console.log("No Events: ", calendarName, calendarId)
+//                 return;
+//             }
+//             // else {
+//             //       events.forEach(function(item) {
+//             //         //   console.log(item['summary'])
+//             //       })
+//             //   }
+//             done(null, auth, calendarId, calendarName, timeMin, timeMax, events)
+//         }
+//
+//         // console.log(events)
+//     });
+// }
