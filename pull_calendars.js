@@ -1,4 +1,4 @@
-// Next Step: get "listEvents" to return an array of events inside of an array
+// Next Step: fet events to return from "get events"
 
 
 var fs = require('fs');
@@ -12,20 +12,20 @@ var Promise = require('promise');
 
 
 
-//// Express Server
-// var express = require('express');
-// var app = express();
-//
-// app.get('/', function (req, res) {
-//   res.send('Hello World!');
-// });
-//
-// var server = app.listen(8080, function () {
-//   var host = server.address().address;
-//   var port = server.address().port;
-//
-//   console.log('Example app listening at http://%s:%s', host, port);
-// });
+// Express Server
+var express = require('express');
+var app = express();
+
+app.get('/', function(req, res) {
+    res.send(eventList);
+});
+
+var server = app.listen(8080, function() {
+    var host = server.address().address;
+    var port = server.address().port;
+
+    console.log('Example app listening at http://%s:%s', host, port);
+});
 
 
 
@@ -144,44 +144,40 @@ var timeMax = moment.tz(printDate + " 23:59:59", timeZone).format() //"2015-11-0
 console.log(timeZone)
 console.log("StartTime:", timeMin)
 console.log("EndTime:", timeMax)
-
-// execute with auth
+var eventList = []
+    // execute with auth
 function execute(auth) {
     getCalendars(auth)
         .then(function(calendars) {
             getEvents(auth, timeMin, timeMax, calendars)
+        }).then(function(events, auth) {
+            console.log("z", auth);
         })
-
-
-
-
-    .catch(function(error) {
+        .catch(function(error) {
             throw new Error("Error: " + error)
         })
-        // }
-        // listEvents(auth)
-
-    // Batch Requesting Works, but looks like I need a different API Key, that's a pain so let's wait for now
-    // var batch = new Batchelor({
-    //     'uri':'https://www.googleapis.com/batch',
-    //     'method':'POST',
-    //     'auth':
-    //     {
-    //         'bearer': auth['credentials']['access_token']
-    //     },
-    //     'headers': {
-    //         'Content-Type': 'multipart/mixed'
-    //     }
-    // });
-    // batch.add({
-    //     'method':'GET',
-    //     'path':'/calendar/v3/users/me/calendarList'
-    // })
-    // batch.run(function(err, response){
-    //     console.log('response:', response);
-    //   //   res.json(response);
-    // });
 }
+
+// function execute(auth) {
+//         // Return a new promise.
+//         return new Promise(function(resolve, reject) {
+//             authlocal = {
+//                 auth: auth
+//             }
+//             return getCalendars(auth)
+//                 .then(function(calendars) {
+//                     getEvents(auth, timeMin, timeMax, calendars)
+//                 })
+//                 .then(function(vars){
+//                     return vars
+//                 })
+//                 .catch(function(error) {
+//                     throw new Error("Error: " + error)
+//                 })
+//
+//         });
+// }
+
 
 
 
@@ -225,7 +221,7 @@ function getEvents(auth, timeMin, timeMax, calendars) {
     console.log(timeMin, timeMax)
     return new Promise(function(resolve, reject) {
         // Pull list of all events in a calendar
-        events = []
+        eventsList = []
         emptyCals = []
         calendars.forEach(function(cal) {
             console.log("Calendar Selected:", cal['summary'])
@@ -238,6 +234,7 @@ function getEvents(auth, timeMin, timeMax, calendars) {
                 orderBy: 'startTime'
             }, function(err, response) {
                 // console.log(response)
+                list = []
                 if (err) {
                     console.error("**** [", cal['summary'], '] The API returned an error: ' + err);
                 }
@@ -245,17 +242,23 @@ function getEvents(auth, timeMin, timeMax, calendars) {
                 else if (response && response.items) {
                     if (response.items.length > 0) {
                         response.items.forEach(function(item) {
-                            events.push(item);
-                            console.log("[ " + cal['summary'] + " ] ", item['summary'])
-                        })
+                                console.log("[ " + cal['summary'] + " ] ", item['summary'])
+                            })
+                            // console.log (response.items)
+                        list.push(response.items)
                     } else {
                         console.error("**** [", cal['summary'], "] No Events")
                         emptyCals.push(cal);
                     }
+
                 }
+                // console.log(list)
+                // eventsList.push(list)
+                eventsList.push(list)
             })
         })
-
+        console.log(eventsList)
+        resolve(eventsList, auth)
     });
 }
 
@@ -277,7 +280,7 @@ function getEvents(auth, timeMin, timeMax, calendars) {
 
 
 
-// 
+//
 // function listEvents(auth, calendarId, calendarName, timeMin, timeMax, done) {
 //     // Pull list of all events in a calendar
 //     calendar.events.list({
