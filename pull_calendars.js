@@ -8,6 +8,8 @@ var googleAuth = require('google-auth-library');
 // var Batchelor = require('batchelor');
 var moment = require('moment-timezone');
 var timeZone = "America/New_York"
+var Promise = require('promise');
+
 
 
 //// Express Server
@@ -137,7 +139,17 @@ function storeToken(token) {
 
 // execute with auth
 function execute(auth) {
-  listCalendars(auth, getEvents)
+  getCalendars(auth)
+    .then(listCalendars)
+    .then(function(val){
+        console.log("yes")
+        val.forEach(function(cal){
+            console.log("a", cal['id'])
+        })
+    })
+    .catch(function (error) {
+        throw new Error("Error: " + error)
+    })
   // }
   // listEvents(auth)
 
@@ -172,22 +184,63 @@ console.log (timeZone)
 console.log ("StartTime:", timeMin)
 console.log ("EndTime:", timeMax)
 
-function listCalendars(auth, done) {
-  // Pull list of all Calendars in the Account
-  authlocal = {auth:auth}
-  calendar.calendarList.list(authlocal,
-      function(err, response) {
-        if (err) {
-          console.log('The API returned an error: ' + err);
-         return
+// var promise = new Promise(function(resolve, reject) {
+//   // do a thing, possibly async, then…
+//
+//   if (/* everything turned out fine */) {
+//     resolve("Stuff worked!");
+//   }
+//   else {
+//     reject(Error("It broke"));
+//   }
+// });
+
+function getCalendars(auth) {
+  // Return a new promise.
+  return new Promise(function(resolve, reject) {
+      authlocal = {auth:auth}
+      calendar.calendarList.list(authlocal,
+          function(err, response) {
+            if (err) {
+              reject(Error('The API returned an error: ' + err));
+          } else {
+            calendars = response.items;
+            // console.log(calendars)
+            resolve(calendars, auth)
+            // return calendars
         }
-        calendars = response.items;
-        // console.log(calendars)
-        done(null, auth, calendars)
-        // return calendars
-    });
-  // done(null, cals);
+        });
+
+  });
 }
+
+function listCalendars(calendars) {
+    if (calendars) {
+        calendars.forEach(function (calendar) {
+            console.log("a",calendar['summary'])
+
+    })
+    return calendars
+    }
+    return console.error();
+}
+//
+// function listCalendars(auth, done) {
+//   // Pull list of all Calendars in the Account
+//   authlocal = {auth:auth}
+//   calendar.calendarList.list(authlocal,
+//       function(err, response) {
+//         if (err) {
+//           console.log('The API returned an error: ' + err);
+//          return
+//         }
+//         calendars = response.items;
+//         // console.log(calendars)
+//         done(null, auth, calendars)
+//         // return calendars
+//     });
+//   // done(null, cals);
+// }
 
 function getEvents(err, auth, cals) {
     if (err) {
@@ -196,7 +249,7 @@ function getEvents(err, auth, cals) {
     // console.log(cals);
     cals.forEach( function (item) {
         // console.log(item['id'])
-        console.log(listEvents(auth, item['id'], item['summary'], timeMin, timeMax, ))
+        listEvents(auth, item['id'], item['summary'], timeMin, timeMax, function(){} )
         // console.log(auth);
     })
 }
