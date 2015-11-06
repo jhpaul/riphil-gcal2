@@ -1,0 +1,8 @@
+
+calendars = select(getCalendars(auth))
+events = getEvents(auth, calendars, day)
+eventsSorted = sortByRoomAndTime(events)
+display(eventsSorted)
+edit(display)
+toPDF(display)
+http://tablesorter.com/docs/example-trigger-sort.html
