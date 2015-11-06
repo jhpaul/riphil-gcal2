@@ -221,7 +221,7 @@ function getEvents(auth, timeMin, timeMax, calendars) {
     console.log(timeMin, timeMax)
     return new Promise(function(resolve, reject) {
         // Pull list of all events in a calendar
-        eventsList = []
+        eventsList = new Array()
         emptyCals = []
         calendars.forEach(function(cal) {
             console.log("Calendar Selected:", cal['summary'])
@@ -234,27 +234,29 @@ function getEvents(auth, timeMin, timeMax, calendars) {
                 orderBy: 'startTime'
             }, function(err, response) {
                 // console.log(response)
-                list = []
+                list = new Array()
                 if (err) {
                     console.error("**** [", cal['summary'], '] The API returned an error: ' + err);
                 }
                 // console.log(response)
-                else if (response && response.items) {
-                    if (response.items.length > 0) {
-                        response.items.forEach(function(item) {
-                                console.log("[ " + cal['summary'] + " ] ", item['summary'])
-                            })
-                            // console.log (response.items)
-                        list.push(response.items)
-                    } else {
-                        console.error("**** [", cal['summary'], "] No Events")
-                        emptyCals.push(cal);
-                    }
+                else if (response && response.items && response.items.length > 0) {
+                    response.items.forEach(function(item) {
+                            console.log("[ " + cal['summary'] + " ] ", item['summary'])
+                            list.push(item)
+                        })
+                        // console.log (response.items)
 
+                } else {
+                    console.error("**** [", cal['summary'], "] No Events")
+                    emptyCals.push(cal);
                 }
-                // console.log(list)
-                // eventsList.push(list)
-                eventsList.push(list)
+
+                if (list.length >0 ){
+                    console.log(list)
+                    // eventsList.push(list)
+                    eventsList.push(list)
+                }
+
             })
         })
         console.log(eventsList)
