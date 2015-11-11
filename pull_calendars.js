@@ -7,25 +7,26 @@ var google = require('googleapis');
 var googleAuth = require('google-auth-library');
 // var Batchelor = require('batchelor');
 var moment = require('moment-timezone');
-var timeZone = "America/New_York"
+var timeZone = "America/New_York";
 var Promise = require('promise');
+var async = require('async');
 
 
 
 // Express Server
-var express = require('express');
-var app = express();
-
-app.get('/', function(req, res) {
-    res.send(eventList);
-});
-
-var server = app.listen(8080, function() {
-    var host = server.address().address;
-    var port = server.address().port;
-
-    console.log('Example app listening at http://%s:%s', host, port);
-});
+// var express = require('express');
+// var app = express();
+//
+// app.get('/', function(req, res) {
+//     res.send(eventList);
+// });
+//
+// var server = app.listen(8080, function() {
+//     var host = server.address().address;
+//     var port = server.address().port;
+//
+//     console.log('Example app listening at http://%s:%s', host, port);
+// });
 
 
 
@@ -38,9 +39,9 @@ var TOKEN_PATH = TOKEN_DIR + 'calendar-nodejs-quickstart.json';
 /* use a function for the exact format desired... */
 function ISODateString(d) {
     function pad(n) {
-        return n < 10 ? '0' + n : n
+        return n < 10 ? '0' + n : n;
     }
-    return d.getUTCFullYear() + '-' + pad(d.getUTCMonth() + 1) + '-' + pad(d.getUTCDate()) + 'T' + pad(d.getUTCHours()) + ':' + pad(d.getUTCMinutes()) + ':' + pad(d.getUTCSeconds()) + 'Z'
+    return d.getUTCFullYear() + '-' + pad(d.getUTCMonth() + 1) + '-' + pad(d.getUTCDate()) + 'T' + pad(d.getUTCHours()) + ':' + pad(d.getUTCMinutes()) + ':' + pad(d.getUTCSeconds()) + 'Z';
 }
 
 // var d = new Date();
@@ -138,24 +139,34 @@ function storeToken(token) {
 
 var calendar = google.calendar('v3');
 
-var printDate = "2015-11-05" //to be changed to route "localhost/day/2015-11-02"
-var timeMin = moment.tz(printDate + " 00:00", timeZone).format() //"2015-11-03T00:00:00Z"
-var timeMax = moment.tz(printDate + " 23:59:59", timeZone).format() //"2015-11-03T23:59:59Z"
-console.log(timeZone)
-console.log("StartTime:", timeMin)
-console.log("EndTime:", timeMax)
-var eventList = []
-    // execute with auth
+var printDate = "2015-11-05"; //to be changed to route "localhost/day/2015-11-02"
+var timeMin = moment.tz(printDate + " 00:00", timeZone).format(); //"2015-11-03T00:00:00Z"
+var timeMax = moment.tz(printDate + " 23:59:59", timeZone).format(); //"2015-11-03T23:59:59Z"
+console.log(timeZone);
+console.log("StartTime:", timeMin);
+console.log("EndTime:", timeMax);
+var eventList = [];
+// execute with auth
 function execute(auth) {
     getCalendars(auth)
         .then(function(calendars) {
-            getEvents(auth, timeMin, timeMax, calendars)
-        }).then(function(events, auth) {
-            console.log("z", auth);
+            combineEvents(auth, timeMin, timeMax, calendars);
         })
-        .catch(function(error) {
-            throw new Error("Error: " + error)
-        })
+        .then(
+            function(events) {
+                console.log("even", events);
+                // events.forEach(function(event) {
+                //     console.log("~~~~~~", event.summary);
+                // });
+            }
+        )
+
+    // .then(function(events) {
+    //     console.log("z", events);
+    // })
+    .catch(function(error) {
+        throw new Error("Error: " + error);
+    });
 }
 
 // function execute(auth) {
@@ -197,7 +208,7 @@ function getCalendars(auth) {
     return new Promise(function(resolve, reject) {
         authlocal = {
             auth: auth
-        }
+        };
         calendar.calendarList.list(authlocal,
             function(err, response) {
                 if (err) {
@@ -206,63 +217,96 @@ function getCalendars(auth) {
                     calendars = response.items;
                     // console.log(calendars)
                     calendars.forEach(function(calendar) {
-                        console.log(calendar['summary'])
-                    })
-                    resolve(calendars, auth)
-                        // return calendars
+                        console.log(calendar.summary, calendar.id);
+                    });
+                    resolve(calendars, auth);
+                    // return calendars
                 }
             });
 
     });
 }
 
-function getEvents(auth, timeMin, timeMax, calendars) {
-    // Return a new promise.
-    console.log(timeMin, timeMax)
+function combineEvents(auth, timeMin, timeMax, calendars) {
     return new Promise(function(resolve, reject) {
-        // Pull list of all events in a calendar
-        eventsList = new Array()
-        emptyCals = []
-        calendars.forEach(function(cal) {
-            console.log("Calendar Selected:", cal['summary'])
-            calendar.events.list({
+        // calendars.forEach(function(each) {
+        //             getEvents(auth, timeMin, timeMax, each);
+        //     });
+        x = [];
+            for (var item in calendars){
+                y = getEvents(auth, timeMin, timeMax, each);
+                x.concat(y);
+                console.log(item);
+            }
+            // for (var i = 1; i <= 3; i++) {
+            //     sub_array.push(i);
+            //     super_array.push(sub_array.concat());
+            // }
+            });
+  // All tasks are done now
+}
+
+
+
+
+
+function getEvents(auth, timeMin, timeMax, cal,callback) {
+    // Return a new promise.
+    // console.log(timeMin, timeMax);
+    // new Promise(function(resolve, reject) {
+
+
+        function printResponse(err, response) {
+            if (response && response.items && response.items.length > 0) {
+                callback(null, response.items);
+                // console.log(response.items[0]);
+            }
+        }
+
+
+        calendar.events.list({
                 auth: auth,
-                calendarId: cal['id'],
+                calendarId: cal.id,
                 timeMin: timeMin,
                 timeMax: timeMax,
                 singleEvents: 'True',
                 orderBy: 'startTime'
-            }, function(err, response) {
-                // console.log(response)
-                list = new Array()
-                if (err) {
-                    console.error("**** [", cal['summary'], '] The API returned an error: ' + err);
-                }
-                // console.log(response)
-                else if (response && response.items && response.items.length > 0) {
-                    response.items.forEach(function(item) {
-                            console.log("[ " + cal['summary'] + " ] ", item['summary'])
-                            list.push(item)
-                        })
-                        // console.log (response.items)
-
-                } else {
-                    console.error("**** [", cal['summary'], "] No Events")
-                    emptyCals.push(cal);
-                }
-
-                if (list.length >0 ){
-                    console.log(list)
-                    // eventsList.push(list)
-                    eventsList.push(list)
-                }
-
-            })
-        })
-        console.log(eventsList)
-        resolve(eventsList, auth)
-    });
+            },
+            printResponse
+        );
+        // return result;
+        // });
+        // console.log(y);
 }
+
+
+
+
+
+// function(cal){
+//     events = [];
+//     calendar.events.list({
+//             auth: auth,
+//             calendarId: cal.id,
+//             timeMin: timeMin,
+//             timeMax: timeMax,
+//             singleEvents: 'True',
+//             orderBy: 'startTime'
+//         },
+//         function(err, response) {
+//             list = [];
+//                 // console.log(response)
+//             if (response && response.items && response.items.length > 0) {
+//                 // console.log(response.items)
+//                 Array.prototype.push(list, response.items);
+//             }
+//             return [list];
+//         });
+//     console.log("p", events);
+//     return events;
+// });
+// });
+// }
 
 
 
